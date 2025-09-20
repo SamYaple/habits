@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"context"
 	"crypto/rand"
 	"crypto/sha256"
@@ -45,6 +46,38 @@ func NewStateStore(ttl time.Duration) *StateStore {
 		}
 	}()
 	return s
+}
+
+func (s *Server) simpleLogin(w http.ResponseWriter, r *http.Request) {
+    w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+    fmt.Fprint(w, `<!DOCTYPE html>
+<html>
+<head>
+<title>OIDC Providers</title>
+<style>
+button {
+    display: block;
+    margin: 10px 0;
+    padding: 10px 20px;
+    font-size: 16px;
+}
+</style>
+</head>
+<body>
+<h1>Available OIDC Providers</h1>
+`)
+
+    for id := range s.authConf {
+        fmt.Fprintf(w, `<form action="/auth/%s/login" method="GET">
+            <button type="submit">%s</button>
+        </form>
+`, id, s.authConf[id].name)
+    }
+
+    fmt.Fprint(w, `
+</body>
+</html>`)
 }
 
 func (s *Server) getAPIToken(w http.ResponseWriter, r *http.Request) {
